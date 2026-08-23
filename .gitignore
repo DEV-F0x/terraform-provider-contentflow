@@ -1,0 +1,16 @@
+# Build output
+/terraform-provider-contentflow
+/dist/
+
+# Local Terraform runs (examples/, or anywhere else this is tried out)
+**/.terraform/
+**/.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+
+# Go
+*.test
+*.out
