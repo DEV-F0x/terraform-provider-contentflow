@@ -138,10 +138,14 @@ go generate ./...
 ```
 
 (via [`tfplugindocs`](https://github.com/hashicorp/terraform-plugin-docs),
-pinned as a Go tool dependency in `go.mod` -- no separate install needed
-beyond `go generate`.) Commit the result and include it in the next
-`vX.Y.Z` tag; docs are tied to the release they came from, so pushing to
-`main` alone doesn't update what an already-published version shows.
+invoked by pinned version straight from `main.go`'s `go:generate` directive
+-- deliberately *not* a tracked `go tool` dependency in `go.mod`, since that
+would pull its own dependency tree, e.g. go-git, into this module's
+`go.sum`, where Dependabot flags it alongside the provider's real runtime
+dependencies even though none of it ships in the built binary.) Commit the
+result and include it in the next `vX.Y.Z` tag; docs are tied to the release
+they came from, so pushing to `main` alone doesn't update what an
+already-published version shows.
 
 ## Project layout
 

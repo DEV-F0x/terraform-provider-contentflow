@@ -1,6 +1,12 @@
 package main
 
-//go:generate go tool tfplugindocs generate
+// Deliberately NOT a tracked `go tool` dependency (`go get -tool`): that
+// pulls tfplugindocs's own dependency tree (go-git, various crypto libs,
+// ...) straight into this module's go.sum, where Dependabot flags it
+// alongside the provider's actual runtime dependencies even though none of
+// it ships in the built provider binary. `go run <pkg>@<version>` runs it
+// from its own ephemeral module instead, touching nothing here.
+//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@v0.25.0 generate
 
 import (
 	"context"
