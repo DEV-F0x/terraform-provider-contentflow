@@ -125,15 +125,36 @@ To connect a release to the Terraform Registry: sign in at
 **public** key under Settings -> Signing Keys if it isn't there already.
 The registry then tracks every `vX.Y.Z` tag automatically.
 
+## Documentation
+
+The registry renders its docs pages straight from [`docs/`](docs/) in the
+repository -- if that directory is missing or out of date, the registry
+shows "Documentation Unavailable" for that version instead of erroring, so
+it's easy to miss. Regenerate it from the provider schema + the example
+snippets in `examples/provider/` and `examples/resources/<name>/` with:
+
+```bash
+go generate ./...
+```
+
+(via [`tfplugindocs`](https://github.com/hashicorp/terraform-plugin-docs),
+pinned as a Go tool dependency in `go.mod` -- no separate install needed
+beyond `go generate`.) Commit the result and include it in the next
+`vX.Y.Z` tag; docs are tied to the release they came from, so pushing to
+`main` alone doesn't update what an already-published version shows.
+
 ## Project layout
 
 ```
-main.go                              providerserver.Serve entry point
+main.go                              providerserver.Serve entry point; go:generate directive for docs
 internal/provider/
   provider.go                        provider schema + configuration
   client.go                          REST client for /api/v1/assets
   asset_resource.go                  contentflow_asset: CRUD + plan logic
 examples/                            runnable example configuration
+examples/provider/                   snippet embedded in docs/index.md
+examples/resources/contentflow_asset/  snippets embedded in docs/resources/asset.md
+docs/                                generated registry documentation (see above)
 .goreleaser.yml                      build/sign/release config
 terraform-registry-manifest.json     protocol version for the registry
 .github/workflows/release.yml        runs GoReleaser on a vX.Y.Z tag push
