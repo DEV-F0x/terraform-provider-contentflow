@@ -2,8 +2,10 @@ package provider
 
 import (
 	"context"
+	"crypto/tls"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -24,6 +26,7 @@ type ContentFlowProvider struct {
 type contentFlowProviderModel struct {
 	Endpoint types.String `tfsdk:"endpoint"`
 	APIToken types.String `tfsdk:"api_token"`
+	Insecure types.Bool   `tfsdk:"insecure"`
 }
 
 func New(version string) func() provider.Provider {
@@ -53,6 +56,14 @@ func (p *ContentFlowProvider) Schema(_ context.Context, _ provider.SchemaRequest
 				Description: "Bearer token for the dashboard's /api/v1 API -- must match " +
 					"DASHBOARD_API_TOKEN on the server. Falls back to the " +
 					"CONTENTFLOW_API_TOKEN environment variable.",
+			},
+			"insecure": schema.BoolAttribute{
+				Optional: true,
+				Description: "Skip TLS certificate verification when connecting to " +
+					"the dashboard -- for self-signed or internal-CA certificates. " +
+					"Defaults to false. Falls back to the CONTENTFLOW_INSECURE " +
+					"environment variable (any value accepted by Go's " +
+					"strconv.ParseBool, e.g. \"true\"/\"1\").",
 			},
 		},
 	}
@@ -93,7 +104,31 @@ func (p *ContentFlowProvider) Configure(ctx context.Context, req provider.Config
 		return
 	}
 
-	client := NewClient(endpoint, apiToken, http.DefaultClient)
+	insecure := data.Insecure.ValueBool()
+	if data.Insecure.IsNull() {
+		if v := os.Getenv("CONTENTFLOW_INSECURE"); v != "" {
+			parsed, err := strconv.ParseBool(v)
+			if err != nil {
+				resp.Diagnostics.AddError(
+					"Invalid CONTENTFLOW_INSECURE value",
+					"Expected a boolean (e.g. \"true\"/\"false\"), got: "+v,
+				)
+				return
+			}
+			insecure = parsed
+		}
+	}
+
+	httpClient := http.DefaultClient
+	if insecure {
+		httpClient = &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // #nosec G402 -- opt-in for self-signed/internal-CA dashboards
+			},
+		}
+	}
+
+	client := NewClient(endpoint, apiToken, httpClient)
 	resp.ResourceData = client
 }
 

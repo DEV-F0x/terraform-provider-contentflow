@@ -42,3 +42,4 @@ variable "contentflow_api_token" {
 
 - `api_token` (String, Sensitive) Bearer token for the dashboard's /api/v1 API -- must match DASHBOARD_API_TOKEN on the server. Falls back to the CONTENTFLOW_API_TOKEN environment variable.
 - `endpoint` (String) Base URL of the ContentFlow dashboard service, e.g. "https://dashboard.example.com". Falls back to the CONTENTFLOW_ENDPOINT environment variable.
+- `insecure` (Boolean) Skip TLS certificate verification when connecting to the dashboard -- for self-signed or internal-CA certificates. Defaults to false. Falls back to the CONTENTFLOW_INSECURE environment variable (any value accepted by Go's strconv.ParseBool, e.g. "true"/"1").
