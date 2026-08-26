@@ -1,7 +1,7 @@
 # terraform-provider-contentflow
 
 A Terraform provider for managing assets on a self-hosted
-[ContentFlow](https://github.com/xXxNIKIxXx/ContentFlow) dashboard.
+[ContentFlow](https://github.com/DEV-F0x/ContentFlow) dashboard.
 `terraform apply` uploads a file and returns the URL it is served at;
 `terraform destroy` removes it.
 
